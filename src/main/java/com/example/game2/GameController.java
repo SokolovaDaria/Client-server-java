@@ -1,31 +1,24 @@
 package com.example.game2;
-
-import com.example.game2.db.MyEntity;
 import com.example.game2.db.PlayerDataAccessBuilder;
 import com.example.game2.db.WinnersTable;
 import com.example.game2.models.Model;
 import com.example.game2.models.ModelBuilder;
 import com.example.game2.models.Player;
 import com.example.game2.models.Point;
-import com.example.game2.server.IObserver;
-import com.example.game2.server.SocketMessageWrapper;
 import com.example.game2.server.Action;
+import com.example.game2.server.IObserver;
 import com.example.game2.server.Request;
+import com.example.game2.server.SocketMessageWrapper;
 import com.google.gson.Gson;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,44 +42,43 @@ public class GameController implements IObserver {
 
     public void initialize() {
         model.addObserver(this);
-    }                                                                              // контроллер устанавливает себя в качестве наблюдателя  для модели, чтобы получать уведомления о изменениях
+    }                                                                                                // контроллер устанавливает себя в качестве наблюдателя  для модели, чтобы получать уведомления о изменениях
 
     @FXML
     void ready() {                                         // формируем запрос и отправляем на сервер
         Request request = new Request(Action.isReady);
-        socketMessageWrapper.writeData(gson.toJson(request));
+        socketMessageWrapper.sendMessage(gson.toJson(request));
     }
 
     @FXML
     void shoot() {
         Request request = new Request(Action.shoot);
-        socketMessageWrapper.writeData(gson.toJson(request));
+        socketMessageWrapper.sendMessage(gson.toJson(request));
+       // System.out.println(gson.toJson(request));
     }
 
     @FXML
     void pause() {
         Request request = new Request(Action.pause);
-        socketMessageWrapper.writeData(gson.toJson(request));
+        socketMessageWrapper.sendMessage(gson.toJson(request));
     }
 
     @FXML
     void tableWinners() {
         Request request = new Request(Action.showTable);
-        socketMessageWrapper.writeData(gson.toJson(request));
+        socketMessageWrapper.sendMessage(gson.toJson(request));
 
         showTableFlag = true;
     }
 
     @Override
-    public void update() throws Exception {
-        // проверка победителя
+    public void update() {
+        //
         String winner = model.getWinner();
         if (winner != null) {
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-
                 alert.setContentText(
-
                         ((winner.equals(this.playerName)
                                 ? "Вы победили!"
                                 : "Победил " + winner))
@@ -95,7 +87,7 @@ public class GameController implements IObserver {
             });
         }
 
-        // обновление мишеней
+        //\/\
         List<Point> targetList = model.getTargetList();
 
         if (targetList != null && targetList.size() != 0) {
@@ -109,7 +101,7 @@ public class GameController implements IObserver {
 
                         gamePanel.getChildren().add(target);
 
-                    }  else {
+                    } else {
                         targets.get(i).setCenterY(targetList.get(i).getY()); // меняем координаты
                         targets.get(i).setCenterX(targetList.get(i).getX());
                         targets.get(i).setRadius(targetList.get(i).getRadius());
@@ -118,7 +110,7 @@ public class GameController implements IObserver {
             });
         }
 
-        // обновление информации об игроках
+        // right panel info
         List<Player> playerList = model.getPlayerList();
         if (playerList != null && playerList.size() != 0) {
 
@@ -139,7 +131,7 @@ public class GameController implements IObserver {
             });
         }
 
-        // обновление игроков
+        // /\
         if (playerList != null || playerList.size() == 0 && players.size() != playerList.size()) {
 
             Platform.runLater(() -> {
@@ -163,7 +155,7 @@ public class GameController implements IObserver {
             });
         }
 
-        // обновление стрел
+        // ->
         List<Point> arrowList = model.getArrowList();
         if (arrowList != null && !arrowList.isEmpty()) {
             Platform.runLater(() -> {
@@ -180,41 +172,15 @@ public class GameController implements IObserver {
         }
 
 
-        if (showTableFlag && model.getMyEntityList() != null && model.getMyEntityList().size() != 0) {
-           // showTable();
-            WinnersTable winnersTable = new WinnersTable(PlayerDataAccessBuilder.build());
-            winnersTable.start(new Stage());
+        if (showTableFlag) {
+
+            Platform.runLater(() -> {
+                WinnersTable winnersTable = new WinnersTable(PlayerDataAccessBuilder.build());
+                winnersTable.start(new Stage());
+
+            });
             showTableFlag = false;
         }
-
     }
-//    private void showTable() {
-//        Platform.runLater(() -> {
-//            TableView<MyEntity> tableView = new TableView<>();
-//
-//            TableColumn<MyEntity, String> column1 =
-//                    new TableColumn<>("Игрок");
-//
-//            column1.setCellValueFactory(
-//                    new PropertyValueFactory<>("name"));
-//
-//            TableColumn<MyEntity, String> column2 =
-//                    new TableColumn<>("Число побед");
-//
-//            column2.setCellValueFactory(
-//                    new PropertyValueFactory<>("wins"));
-//
-//            tableView.getColumns().add(column1);
-//            tableView.getColumns().add(column2);
-//
-//            model.getMyEntityList().forEach(tableView.getItems()::add);
-//
-//            VBox vbox = new VBox(tableView);
-//            Scene scene = new Scene(vbox);
-//            Stage stage = new Stage();
-//            stage.setScene(scene);
-//            stage.setTitle("Таблица лидеров");
-//            stage.show();
-//        });
-//    }
+
 }

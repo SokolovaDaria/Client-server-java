@@ -1,86 +1,59 @@
 package com.example.game2.models;
-
 import com.example.game2.db.MyEntity;
 import com.example.game2.db.PlayerDataAccess;
 import com.example.game2.server.IObserver;
 import com.example.game2.server.MyServer;
-
 import java.util.ArrayList;
 import java.util.List;
-
-
 public class Model {
     private String winner = null;
     private List<Player> playerList = new ArrayList<>();
-
     final PlayerDataAccess playerDataAccess;
-
     public String getWinner() {
         return winner;
     }
-
     public void setWinner(String winner) {
         this.winner = winner;
     }
-
     public List<Player> getPlayerList() {
         return playerList;
     }
-
     public void setPlayerList(List<Player> playerList) {
         this.playerList = playerList;
     }
-
     public List<Point> getTargetList() {
         return targetList;
     }
-
     public void setTargetList(List<Point> targetList) {
         this.targetList = targetList;
     }
-
     public List<Point> getArrowList() {
         return arrowList;
     }
-
     public void setArrowList(List<Point> arrowList) {
         this.arrowList = arrowList;
     }
-
-    private List<String> readyToStartList = new ArrayList<>();
-    ;
-    private List<String> waitList = new ArrayList<>();
-    ;
-    private List<String> shootList = new ArrayList<>();
-    ;
+    private final List<String> readyToStartList = new ArrayList<>();
+    private final List<String> waitList = new ArrayList<>();
+    private final List<String> shootList = new ArrayList<>();
     private List<Point> targetList = new ArrayList<>();
-    ;
     private List<Point> arrowList = new ArrayList<>();
-    ;
-
     public List<MyEntity> getMyEntityList() {
         return myEntityList;
     }
-
     private List<MyEntity> myEntityList = new ArrayList<>();;
-
     private List<IObserver> observerList = new ArrayList<>();
-
     private final int maxScore = 30;
     private int dirLeftTarget = 1;
     private int dirRightTarget = 1;
-
-
-
     private volatile boolean flagReset = true;
     private boolean gameRunning = true;
-
     private final double arrowLength = 60;
     private final double borderY = 500;
     private final double arrowXStart = 10;
     private final double leftX = 350;
     private final double targetY = 250;
-    private final double rightX = 450;
+    private final double rightX = 470;
     private final double leftTargetSpeed = 2.5;
     private final double rightTargetSpeed = 5;
     private final double arrowSpeed = 3.5;
@@ -89,9 +62,10 @@ public class Model {
     public Model(PlayerDataAccess playerDataAccess) {
         this.playerDataAccess = playerDataAccess;
     }
+
     public void initialize() {
-        targetList.add(new Point(leftX, targetY, 50));
-        targetList.add(new Point(rightX, targetY, 25));
+        targetList.add(new Point(leftX, targetY, 70));
+        targetList.add(new Point(rightX, targetY, 35));
 
         arrowList.clear();
         // размещаем стартовые позиции
@@ -103,7 +77,7 @@ public class Model {
     }
 
     public void addNewPlayer(Player player) {
-        MyEntity playerEntity = MyEntity.builder()
+        MyEntity playerEntity = MyEntity.builder()    // заготовка
                 .name(player.getName())
                 .wins(0)
                 .build();
@@ -113,6 +87,8 @@ public class Model {
 
         myEntityList.add(playerEntity);
         playerDataAccess.addPlayerToBD(playerEntity);
+        System.out.println(playerEntity.getName());
+
         MyEntity myEntity = playerDataAccess.getPlayerFromBD(playerEntity.getName());
         player.setWinsCounter(myEntity.getWins());
 
@@ -158,7 +134,7 @@ public class Model {
                         moveTargets();
 
                         if (shootList.size() != 0) {
-                            shoot();
+                            shootAndCheckWin();
                         }
 
                         server.broadcast();
@@ -166,7 +142,6 @@ public class Model {
                         try {
                             Thread.sleep(16);
                         } catch (InterruptedException ignored) {
-
                         }
                     }
                 }
@@ -198,7 +173,7 @@ public class Model {
 
     }
 
-    private void shoot() {
+    private void shootAndCheckWin() {
         for (int i = 0; i < shootList.size(); i++) {
             if (shootList.get(i) == null) {
                 break;
@@ -226,7 +201,6 @@ public class Model {
                 return;
             }
 
-
             arrow.setX(arrowXStart);  // сбрасываем положение стрелы
 
             if (shootList.size() == 1) {
@@ -235,30 +209,24 @@ public class Model {
                 shootList.remove(player.getName());
             }
 
-            //проверка на победу
+            //  проверка на победу
             for (Player dataManager : playerList) {
                 if (dataManager.getScoreCounter() >= maxScore) {
                     this.winner = dataManager.getName();
                     RESET();
-                  //  break;
-
 
                     MyEntity playerWinner = null;
-
                     for (MyEntity entity : myEntityList) {
                         if (entity.getName().equals(winner)) {
                             playerWinner = entity;
                             break;
                         }
                     }
-
                     if (playerWinner != null) {
                         playerWinner.incrementWins();
                     } else {
                         throw new RuntimeException("Winner not found in myEntityList");
                     }
-
-
 
                     Player p = null;
 
@@ -277,6 +245,8 @@ public class Model {
 
                     PlayerDataAccess.updatePlayerInBD(playerWinner);
                 }
+
+
             }
 
         }
@@ -344,8 +314,8 @@ public class Model {
         }
     }
 
-    public void addObserver(IObserver gbc) {
-        observerList.add(gbc);
+    public void addObserver(IObserver observer) {
+        observerList.add(observer);
     }
 
     public void updateWinTable(MyServer server) {
@@ -353,4 +323,7 @@ public class Model {
         server.broadcast();
     }
 
+    public void setMyEntityList(List<MyEntity> entityList) {
+        this.myEntityList = entityList;
+    }
 }

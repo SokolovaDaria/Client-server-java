@@ -1,5 +1,4 @@
 package com.example.game2;
-
 import com.example.game2.models.Model;
 import com.example.game2.models.ModelBuilder;
 import com.example.game2.server.Response;
@@ -12,7 +11,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -25,7 +23,6 @@ public class StartPageController {
     InetAddress ip = null;
     SocketMessageWrapper socketMessageWrapper;
     Model model = ModelBuilder.build();;
-
     @FXML
     TextField nameField;
     @FXML
@@ -41,20 +38,23 @@ public class StartPageController {
                 new Thread(
                         () -> {
                             while (true) {
-                                String data = socketMessageWrapper.readData();
-
+                                String data = socketMessageWrapper.getMessage();
+                              //  System.out.println(data);
                                 Gson gson = new Gson();
                                 Response answer = gson.fromJson(data, Response.class);
 
-                                model.setPlayerList(answer.getPlayerList()); // сервер посылает клиенту состояние модели
+                                model.setPlayerList(answer.getPlayerList());                            // сервер посылает клиенту состояние модели
                                 model.setTargetList(answer.getTargetList());
                                 model.setArrowList(answer.getArrowList());
                                 model.setWinner(answer.getWinner());
+                                model.setMyEntityList(answer.getEntityList());
                                 model.update();
                             }
                         }
                 ).start();
+
                 openGamePage();
+
             } else {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Ошибка");
@@ -84,7 +84,6 @@ public class StartPageController {
 
             GameController controller = fxmlLoader.getController();
 
-            // controller.dataInit(socketMessageWrapper, nameField.getText().trim());
             controller.socketMessageWrapper = socketMessageWrapper;
             controller.playerName = nameField.getText().trim();
 

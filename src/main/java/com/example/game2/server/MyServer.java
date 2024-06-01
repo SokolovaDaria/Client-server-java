@@ -23,21 +23,24 @@ public class MyServer {
     public static void main(String[] args) {
         new MyServer().startServer();
     }
+
     public void broadcast() {
-        clientList.forEach(MyClient::sendToClient);
+        for (MyClient myClient : clientList) {
+            myClient.sendToClient();
+        }
     }
 
     public void startServer() {
         try {
             ip = InetAddress.getLocalHost();
-            serverSocket = new ServerSocket(port, 2, ip);               // слушает остальные сокеты
+            serverSocket = new ServerSocket(port, 2, ip);                                          // слушает остальные сокеты
 
             model.initialize();
 
             while (true) {
-                Socket clientSocket = serverSocket.accept(); // когда клиент подключается, accept() возвращает новый сокет для взаимодействия с клиентом
+                Socket clientSocket = serverSocket.accept();                                           // когда клиент подключается, accept() возвращает новый сокет для взаимодействия с клиентом
                 SocketMessageWrapper socketMessageWrapper = new SocketMessageWrapper(clientSocket);
-                String userName = socketMessageWrapper.getMessage(); // получаем имя пользователя
+                String userName = socketMessageWrapper.getMessage(); //  имя
 
                 if (!addClient(socketMessageWrapper, userName)) {
                     clientSocket.close();
@@ -60,10 +63,9 @@ public class MyServer {
             socketMessageWrapper.sendMessage("ACCEPT");
             MyClient client = new MyClient(socketMessageWrapper, this, userName);
             clientList.add(client);
-            service.submit(client);
+            service.submit(client);   //            Thread thread = new Thread(client);   thread.start();
             return true;
         }
-
         socketMessageWrapper.sendMessage("Имя игрока должно быть уникальным!");
         return false;
     }

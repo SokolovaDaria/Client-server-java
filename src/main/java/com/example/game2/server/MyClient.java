@@ -33,18 +33,18 @@ public class MyClient implements Runnable {
 
         ResponseFromServer.setEntityList(model.getMyEntityList());
 
-        socketMessageWrapper.writeData(gson.toJson(ResponseFromServer));
+        socketMessageWrapper.sendMessage(gson.toJson(ResponseFromServer));
+       //
     }
 
     @Override
     public void run() {
         model.addNewPlayer(player);
+        System.out.println(player.getName());
         server.broadcast(); // рассылаем текущее состояние игры всем клиентам
 
         while (true) {
-            String data = socketMessageWrapper.readData(); // принимаем входящие сообщения от клиента
-
-            System.out.println(data);
+            String data = socketMessageWrapper.getMessage(); // принимаем входящие сообщения от клиента
 
             Request message = gson.fromJson(data, Request.class); // преобразуем из json в ClientRequest
 

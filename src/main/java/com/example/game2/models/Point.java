@@ -1,6 +1,6 @@
 package com.example.game2.models;
 
-public class Point {
+public class Point extends Object{
     private double x;
     private double y;
     private double radius;

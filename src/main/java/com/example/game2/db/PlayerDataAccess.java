@@ -1,17 +1,12 @@
 package com.example.game2.db;
-
-import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
-
+import org.hibernate.query.Query;
 import java.util.List;
-
 public class PlayerDataAccess {
 
-    private static  SessionFactory sessionFactory ;
+    private static SessionFactory sessionFactory;
 
     public PlayerDataAccess(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
@@ -20,8 +15,11 @@ public class PlayerDataAccess {
     public void addPlayerToBD(MyEntity player) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.save(player);
-            transaction.commit();
+            MyEntity myEntity = getPlayerFromBD(player.getName());
+            if (myEntity == null) {
+                session.save(player);
+                transaction.commit();
+            }
         }
     }
 
@@ -34,22 +32,23 @@ public class PlayerDataAccess {
     }
 
     public static List<MyEntity> getAllPlayersFromBD() {
-        List<MyEntity> result;
+        List<MyEntity> rating;
 
-        try(Session session = sessionFactory.openSession()) {
-            Criteria criteria = session.createCriteria(MyEntity.class)
-                    .addOrder(Order.desc("wins"));
-            result = criteria.list();
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "FROM MyEntity ORDER BY wins DESC";
+            Query<MyEntity> query = session.createQuery(hql, MyEntity.class);
+            rating = query.getResultList();
         }
-
-        return result;
+        return rating;
     }
+
     public MyEntity getPlayerFromBD(String name) {
         MyEntity player;
         try (Session session = sessionFactory.openSession()) {
-            player = (MyEntity) session.createCriteria(MyEntity.class)
-                    .add(Restrictions.eq("name", name))
-                    .uniqueResult();
+            String hql = "FROM MyEntity WHERE name = :name";
+            Query<MyEntity> query = session.createQuery(hql, MyEntity.class);
+            query.setParameter("name", name);
+            player = query.uniqueResult();
         }
         return player;
     }

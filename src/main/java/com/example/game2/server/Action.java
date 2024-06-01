@@ -4,6 +4,5 @@ public enum Action {
     isReady,
     shoot,
     pause,
-
     showTable
 }

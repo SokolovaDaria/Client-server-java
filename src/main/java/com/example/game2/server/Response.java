@@ -11,7 +11,7 @@ public class Response {
     List<Point> targetList;
     List<Point> arrowList;
     String winner;
-
+    List<MyEntity> entityList;
     public List<MyEntity> getEntityList() {
         return entityList;
     }
@@ -19,8 +19,6 @@ public class Response {
     public void setEntityList(List<MyEntity> entityList) {
         this.entityList = entityList;
     }
-
-    List<MyEntity> entityList;
 
     public List<Player> getPlayerList() {
         return playerList;

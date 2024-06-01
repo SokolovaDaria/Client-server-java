@@ -1,5 +1,4 @@
 package com.example.game2.db;
-
 import javax.persistence.*;
 
 @Entity
@@ -8,21 +7,15 @@ public class MyEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
+    private String name;
 
     public String getName() {
         return name;
     }
 
-    private String name;
-
-
     public Integer getWins() {
         return wins;
     }
-
-
 
     private Integer wins;
 
@@ -30,16 +23,12 @@ public class MyEntity {
         wins++;
     }
 
-    private MyEntity() {
+    private MyEntity() {}
 
-    }
-
-    // Статический метод для создания нового экземпляра Builder
     public static Builder builder() {
         return new Builder();
     }
 
-    // Внутренний статический класс Builder
     public static class Builder {
         private MyEntity myEntity;
 
